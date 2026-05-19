@@ -29,6 +29,7 @@ model = WhisperForConditionalGeneration.from_pretrained(
     attn_implementation="flash_attention_4",
     device_map=device,
 )
+model.eval()
 
 audio, sr = librosa.load(AUDIO_PATH, sr=16000)
 print(audio.shape, sr)

@@ -20,3 +20,4 @@ outputs/
 tmp/
 .env
 .opencode/
+AGENTS.md

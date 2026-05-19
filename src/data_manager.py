@@ -90,10 +90,6 @@ class SimpleDataManager:
             if lang_code not in TO_LANGUAGE_CODE.values():
                 raise ValueError(f"Unsupported language: {lang}.")
 
-            # 删除中文和日文中的空格
-            if lang_code in ["zh", "ja"]:
-                text = text.replace(" ", "")
-
             texts.append(text)
             language_codes.append(lang_code)
 
@@ -146,7 +142,7 @@ class SimpleDataManager:
         )
         # 由于需要根据 language 构造，不 batch
         self.dataset = self.dataset.map(
-            self._tokenize, remove_columns=self.dataset.column_names, num_proc=num_proc
+            self._tokenize, remove_columns=self.dataset.column_names
         )
         return self.dataset
 
