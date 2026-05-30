@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 SRT_PATH = "./downloads/my-dataset/audio.srt"
 AUDIO_PATH = "./downloads/audio.wav"
-OUTPUT_DIR = "./downloads/my-dataset"
+OUTPUT_DIR = "./outputs/data"
 LANGUAGE = "zh"
 SAMPLE_RATE = 16000
 
@@ -112,6 +112,8 @@ def build_dataset(
                 "audio": str(segment_path.relative_to(json_path.parent)),
                 "language": language,
                 "transcription": subtitle.text,
+                "start_time": subtitle.start,
+                "end_time": subtitle.end,
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 

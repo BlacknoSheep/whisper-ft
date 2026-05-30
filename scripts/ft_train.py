@@ -1,6 +1,5 @@
 import argparse
 import os
-
 import evaluate
 import torch
 from datasets import load_dataset
@@ -26,21 +25,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--attn_implementation", default="sdpa")
 
     # dataset
-    parser.add_argument(
-        "--json_data_file", default="./downloads/my-dataset/metadata.jsonl"
-    )
-    parser.add_argument("--valid_size", type=float, default=0.1)
+    parser.add_argument("--json_data_file", default="./outputs/data/metadata.jsonl")
+    parser.add_argument("--valid_size", type=float, default=0)
     parser.add_argument("--num_proc", type=int, default=8)
 
     # train
     parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--lr_scheduler_type", type=str, default="cosine")
-    parser.add_argument("--weight_decay", type=float, default=0.01)
+    parser.add_argument("--weight_decay", type=float, default=0.1)
     parser.add_argument("--max_steps", type=int, default=100)
     parser.add_argument("--logging-steps", type=float, default=0.01)
     parser.add_argument("--warmup-steps", type=float, default=0.1)
     parser.add_argument("--save_steps", type=float, default=0.1)
-    parser.add_argument("--eval_steps", type=float, default=0.1)
+    parser.add_argument("--eval_steps", type=float, default=0)
     parser.add_argument("--per_device_train_batch_size", type=int, default=32)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=32)
@@ -60,7 +57,7 @@ def main() -> None:
     experiment_time_str = get_utc_time_str()
     output_dir = os.path.join(args.output_dir, args.name)
     os.environ["WANDB_DIR"] = os.path.abspath(output_dir)
-    dtype = torch.float16
+    dtype = torch.bfloat16
 
     # ---------------- model ----------------
     processor = WhisperProcessor.from_pretrained(args.model_name, local_files_only=True)
@@ -94,8 +91,7 @@ def main() -> None:
         tokenizer=processor.tokenizer,
     )
 
-    dataset = dm.get_dataset(num_proc=args.num_proc)
-    train_valid_dataset = dataset.train_test_split(args.valid_size, seed=args.seed)
+    train_dataset = dm.get_dataset(num_proc=args.num_proc)
 
     # ---------------- train ----------------
     metric_cer = evaluate.load("cer")
@@ -132,13 +128,13 @@ def main() -> None:
         eval_steps=args.eval_steps,
         predict_with_generate=True,
         generation_max_length=model_config.max_target_positions,
-        eval_strategy="steps",
+        eval_strategy="steps" if args.eval_steps > 0 else "no",
         per_device_train_batch_size=args.per_device_train_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         eval_accumulation_steps=args.eval_accumulation_steps,  # 将 eval 的中间结果移动到内存中，防止显存溢出
         save_total_limit=args.save_total_limit,
-        load_best_model_at_end=True,
+        # load_best_model_at_end=True,
         # metric_for_best_model="cer",
         # greater_is_better=False,
         # remove_unused_columns=False,  # keep all columns to compute loss
@@ -152,8 +148,7 @@ def main() -> None:
         data_collator=dm.get_collator(dtype=dtype),
         args=training_args,
         # compute_metrics=compute_metrics,
-        train_dataset=train_valid_dataset["train"],
-        eval_dataset=train_valid_dataset["test"],  # type: ignore
+        train_dataset=train_dataset,
         processing_class=processor,
     )
 

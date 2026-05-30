@@ -16,7 +16,7 @@ class SimpleCollator:
 
     feature_extractor: WhisperFeatureExtractor
     tokenizer: WhisperTokenizer
-    dtype: torch.dtype = torch.float32
+    dtype: torch.dtype
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
         # [B, 128, 3000]
