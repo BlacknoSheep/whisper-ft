@@ -20,9 +20,7 @@ class SimpleCollator:
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
         # [B, 128, 3000]
-        input_features = torch.tensor(
-            [feature["input_features"] for feature in features], dtype=self.dtype
-        )
+        input_features = torch.tensor([feature["input_features"] for feature in features], dtype=self.dtype)
 
         batch = self.tokenizer.pad(
             {"input_ids": [feature["labels"] for feature in features]},
@@ -49,12 +47,8 @@ class SimpleDataManager:
         dataset 必须包含这些列：['audio', 'language', 'transcription']
         """
         assert "audio" in dataset.column_names, "Dataset must contain 'audio' column."
-        assert "language" in dataset.column_names, (
-            "Dataset must contain 'language' column."
-        )
-        assert "transcription" in dataset.column_names, (
-            "Dataset must contain 'transcription' column."
-        )
+        assert "language" in dataset.column_names, "Dataset must contain 'language' column."
+        assert "transcription" in dataset.column_names, "Dataset must contain 'transcription' column."
 
         self.dataset = dataset
         self.feature_extractor = feature_extractor
@@ -103,13 +97,9 @@ class SimpleDataManager:
         example["input_features"] = self.feature_extractor(
             example["audio"]["array"], sampling_rate=self.samplerate
         ).input_features[0]
-        transcription_ids = self.tokenizer.encode(
-            example["transcription"], add_special_tokens=False
-        )
+        transcription_ids = self.tokenizer.encode(example["transcription"], add_special_tokens=False)
         example["labels"] = (
-            self._get_prefix_tokens(example["language"])
-            + transcription_ids
-            + [self.tokenizer.eos_token_id]
+            self._get_prefix_tokens(example["language"]) + transcription_ids + [self.tokenizer.eos_token_id]
         )
         return example
 
@@ -119,13 +109,9 @@ class SimpleDataManager:
             self.tokenizer.convert_tokens_to_ids(f"<|{language}|>"),
         ]
         if self.tokenizer.task is not None:
-            prefix_tokens.append(
-                self.tokenizer.convert_tokens_to_ids(f"<|{self.tokenizer.task}|>")
-            )
+            prefix_tokens.append(self.tokenizer.convert_tokens_to_ids(f"<|{self.tokenizer.task}|>"))
         if not self.tokenizer.predict_timestamps:
-            prefix_tokens.append(
-                self.tokenizer.convert_tokens_to_ids("<|notimestamps|>")
-            )
+            prefix_tokens.append(self.tokenizer.convert_tokens_to_ids("<|notimestamps|>"))
         return prefix_tokens  # type: ignore
 
     def get_dataset(self, num_proc=0) -> Dataset:
@@ -137,13 +123,9 @@ class SimpleDataManager:
             batched=True,
             num_proc=num_proc,
         )
-        self.dataset = self.dataset.cast_column(
-            "audio", Audio(sampling_rate=self.samplerate)
-        )
+        self.dataset = self.dataset.cast_column("audio", Audio(sampling_rate=self.samplerate))
         # 由于需要根据 language 构造，不 batch
-        self.dataset = self.dataset.map(
-            self._tokenize, remove_columns=self.dataset.column_names
-        )
+        self.dataset = self.dataset.map(self._tokenize, remove_columns=self.dataset.column_names)
         return self.dataset
 
     def get_collator(self, dtype: torch.dtype = torch.float32):

@@ -14,9 +14,7 @@ import opencc
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="generate_srt")
-    parser.add_argument(
-        "--model_name_or_path", type=str, default="openai/whisper-large-v3-turbo"
-    )
+    parser.add_argument("--model_name_or_path", type=str, default="openai/whisper-large-v3-turbo")
     parser.add_argument("--audio_path", type=str, default="./downloads/audio.wav")
     parser.add_argument("--output_path", type=str, default="./outputs/data/audio.srt")
     parser.add_argument("--batch_size", type=int, default=128)
@@ -48,9 +46,7 @@ def main():
     args = parse_args()
 
     vad = load_silero_vad(onnx=True)
-    processor = WhisperProcessor.from_pretrained(
-        args.model_name_or_path, local_files_only=True
-    )
+    processor = WhisperProcessor.from_pretrained(args.model_name_or_path, local_files_only=True)
     model = WhisperForConditionalGeneration.from_pretrained(
         args.model_name_or_path,
         local_files_only=True,
@@ -79,9 +75,7 @@ def main():
     Path(args.output_path).parent.mkdir(parents=True, exist_ok=True)
     with open(args.output_path, "w") as f:
         for batch_idx in tqdm(range(num_batches)):
-            batch_timestamps = timestamps[
-                batch_idx * args.batch_size : (batch_idx + 1) * args.batch_size
-            ]
+            batch_timestamps = timestamps[batch_idx * args.batch_size : (batch_idx + 1) * args.batch_size]
             batch_segments = []
             for t in batch_timestamps:
                 start, end = t["start"], t["end"]
@@ -90,17 +84,13 @@ def main():
 
             inputs = processor(batch_segments, sampling_rate=16000, return_tensors="pt")
             inputs = {
-                k: v.to(device=device, dtype=model.dtype)
-                if v.is_floating_point()
-                else v.to(device)
+                k: v.to(device=device, dtype=model.dtype) if v.is_floating_point() else v.to(device)
                 for k, v in inputs.items()
             }
 
             with torch.inference_mode():
                 # max_length=448，但是由于 special tokens，实际可用长度要需要短一点
-                generated_ids = model.generate(
-                    **inputs, language=language, task="transcribe", max_new_tokens=224
-                )
+                generated_ids = model.generate(**inputs, language=language, task="transcribe", max_new_tokens=224)
             texts = processor.batch_decode(
                 generated_ids,
                 skip_special_tokens=True,

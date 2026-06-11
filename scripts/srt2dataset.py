@@ -13,11 +13,15 @@ import soundfile as sf
 from tqdm import tqdm
 
 
-SRT_PATH = "./downloads/my-dataset/audio.srt"
-AUDIO_PATH = "./downloads/audio.wav"
-OUTPUT_DIR = "./outputs/data"
-LANGUAGE = "zh"
-SAMPLE_RATE = 16000
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="根据 SRT 字幕和完整音频切分生成 Whisper 训练用 JSONL 数据集。")
+    parser.add_argument("--srt-path", default="./outputs/data/audio.srt")
+    parser.add_argument("--audio-path", default="./downloads/audio.wav")
+    parser.add_argument("--output-dir", default="./outputs/data")
+    parser.add_argument("--language", default="zh")
+    parser.add_argument("--sample-rate", type=int, default=16000)
+    parser.add_argument("--metadata_only", action="store_true", help="仅生成 metadata.jsonl，不切分音频")
+    return parser.parse_args()
 
 
 @dataclass
@@ -36,12 +40,7 @@ TIMESTAMP_RE = re.compile(
 def parse_timestamp(value: str) -> float:
     hours, minutes, rest = value.replace(",", ".").split(":")
     seconds, milliseconds = rest.split(".")
-    return (
-        int(hours) * 3600
-        + int(minutes) * 60
-        + int(seconds)
-        + int(milliseconds) / 1000
-    )
+    return int(hours) * 3600 + int(minutes) * 60 + int(seconds) + int(milliseconds) / 1000
 
 
 def parse_srt(path: Path) -> list[Subtitle]:
@@ -54,9 +53,7 @@ def parse_srt(path: Path) -> list[Subtitle]:
         if not lines:
             continue
 
-        timestamp_index = next(
-            (idx for idx, line in enumerate(lines) if TIMESTAMP_RE.search(line)), None
-        )
+        timestamp_index = next((idx for idx, line in enumerate(lines) if TIMESTAMP_RE.search(line)), None)
         if timestamp_index is None:
             continue
 
@@ -84,12 +81,13 @@ def build_dataset(
     output_dir: Path,
     language: str,
     sample_rate: int,
+    metadata_only: bool = False,
 ) -> None:
     subtitles = parse_srt(srt_path)
     if not subtitles:
         raise ValueError(f"No valid subtitles found in {srt_path}.")
 
-    audio, sr = librosa.load(audio_path, sr=sample_rate, mono=True)
+    audio, _ = librosa.load(audio_path, sr=sample_rate, mono=True)
     audio_dir = output_dir / "audio"
     json_path = output_dir / "metadata.jsonl"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -97,8 +95,8 @@ def build_dataset(
 
     with json_path.open("w", encoding="utf-8") as f:
         for idx, subtitle in enumerate(tqdm(subtitles), start=1):
-            start = round(subtitle.start * sr)
-            end = round(subtitle.end * sr)
+            start = round(subtitle.start * sample_rate)
+            end = round(subtitle.end * sample_rate)
             if start >= len(audio):
                 continue
             end = min(end, len(audio))
@@ -106,7 +104,8 @@ def build_dataset(
                 continue
 
             segment_path = audio_dir / f"{idx:06d}.wav"
-            sf.write(segment_path, audio[start:end], sr)
+            if not metadata_only:
+                sf.write(segment_path, audio[start:end], sample_rate)
 
             record = {
                 "audio": str(segment_path.relative_to(json_path.parent)),
@@ -118,18 +117,6 @@ def build_dataset(
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="根据 SRT 字幕和完整音频切分生成 Whisper 训练用 JSONL 数据集。"
-    )
-    parser.add_argument("--srt-path", default=SRT_PATH)
-    parser.add_argument("--audio-path", default=AUDIO_PATH)
-    parser.add_argument("--output-dir", default=OUTPUT_DIR)
-    parser.add_argument("--language", default=LANGUAGE)
-    parser.add_argument("--sample-rate", type=int, default=SAMPLE_RATE)
-    return parser.parse_args()
-
-
 def main() -> None:
     args = parse_args()
     build_dataset(
@@ -138,6 +125,7 @@ def main() -> None:
         output_dir=Path(args.output_dir),
         language=args.language,
         sample_rate=args.sample_rate,
+        metadata_only=args.metadata_only,
     )
 
 

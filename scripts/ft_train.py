@@ -105,9 +105,7 @@ def main() -> None:
 
         # we do not want to group tokens when computing the metrics
         pred_str = processor.tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
-        label_str = processor.tokenizer.batch_decode(
-            label_ids, skip_special_tokens=True
-        )
+        label_str = processor.tokenizer.batch_decode(label_ids, skip_special_tokens=True)
 
         cer = 100 * metric_cer.compute(predictions=pred_str, references=label_str)  # type: ignore
 
