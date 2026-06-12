@@ -10,6 +10,7 @@ from transformers import (
     WhisperForConditionalGeneration,
     WhisperProcessor,
 )
+from peft import get_peft_model, LoraConfig
 
 
 def parse_args() -> argparse.Namespace:
@@ -17,7 +18,7 @@ def parse_args() -> argparse.Namespace:
         prog="train_ft",
         description="fine-tune whisper model",
     )
-    parser.add_argument("--name", default="simple_ft")
+    parser.add_argument("--name", default="simple_lora")
     parser.add_argument("--output_dir", default="./outputs/finetune")
 
     # model
@@ -25,22 +26,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--attn_implementation", default="sdpa")
 
     # dataset
-    parser.add_argument("--data_file", default="KYOU-0/Ace-Taffy-voice")
+    parser.add_argument("--json_data_file", default="KYOU-0/Ace-Taffy-voice")
     parser.add_argument("--valid_size", type=float, default=0)
     parser.add_argument("--num_proc", type=int, default=8)
 
     # train
-    parser.add_argument("--learning_rate", type=float, default=2e-5)
+    parser.add_argument("--learning_rate", type=float, default=2e-4)
     parser.add_argument("--lr_scheduler_type", type=str, default="cosine")
-    parser.add_argument("--weight_decay", type=float, default=0.1)
-    parser.add_argument("--max_steps", type=int, default=50)
+    parser.add_argument("--weight_decay", type=float, default=0.0)
+    parser.add_argument("--max_steps", type=int, default=100)
     parser.add_argument("--logging_steps", type=float, default=0.01)
     parser.add_argument("--warmup_steps", type=float, default=0.1)
     parser.add_argument("--save_steps", type=float, default=0.2)
     parser.add_argument("--eval_steps", type=float, default=0)
-    parser.add_argument("--per_device_train_batch_size", type=int, default=64)
+    parser.add_argument("--per_device_train_batch_size", type=int, default=32)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
-    parser.add_argument("--per_device_eval_batch_size", type=int, default=64)
+    parser.add_argument("--per_device_eval_batch_size", type=int, default=1)
     parser.add_argument("--eval_accumulation_steps", type=int, default=None)
     parser.add_argument("--save_total_limit", type=int, default=3)
     parser.add_argument("--seed", type=int, default=42)
@@ -70,8 +71,14 @@ def main() -> None:
         attn_implementation=args.attn_implementation,
     )
 
-    # freeze encoder
-    model.model.encoder.requires_grad_(False)
+    # Lora
+    lora_config = LoraConfig(
+        r=64,
+        target_modules = ["q_proj", "v_proj"],
+        lora_alpha=64
+    )
+    model = get_peft_model(model, lora_config)
+    model.print_trainable_parameters() # trainable params: 3,276,800 || all params: 812,154,880 || trainable%: 0.4035
 
     # ---------------- dataset ----------------
     if args.data_file.endswith(".json") or args.data_file.endswith(".jsonl"):
