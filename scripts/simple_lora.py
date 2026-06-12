@@ -26,7 +26,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--attn_implementation", default="sdpa")
 
     # dataset
-    parser.add_argument("--json_data_file", default="KYOU-0/Ace-Taffy-voice")
+    parser.add_argument("--data_file", default="KYOU-0/Ace-Taffy-voice")
     parser.add_argument("--valid_size", type=float, default=0)
     parser.add_argument("--num_proc", type=int, default=8)
 
@@ -84,10 +84,10 @@ def main() -> None:
     if args.data_file.endswith(".json") or args.data_file.endswith(".jsonl"):
         dataset = load_dataset(
             "json",
-            data_files=args.json_data_file,
+            data_files=args.data_file,
             split="train",
         )
-        dataset_dir = os.path.dirname(args.json_data_file)
+        dataset_dir = os.path.dirname(args.data_file)
         dataset = dataset.map(
             lambda x: {"audio": os.path.join(dataset_dir, x["audio"])},
             num_proc=args.num_proc,

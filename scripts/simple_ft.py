@@ -77,10 +77,10 @@ def main() -> None:
     if args.data_file.endswith(".json") or args.data_file.endswith(".jsonl"):
         dataset = load_dataset(
             "json",
-            data_files=args.json_data_file,
+            data_files=args.data_file,
             split="train",
         )
-        dataset_dir = os.path.dirname(args.json_data_file)
+        dataset_dir = os.path.dirname(args.data_file)
         dataset = dataset.map(
             lambda x: {"audio": os.path.join(dataset_dir, x["audio"])},
             num_proc=args.num_proc,
