@@ -34,13 +34,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--learning_rate", type=float, default=2e-4)
     parser.add_argument("--lr_scheduler_type", type=str, default="cosine")
     parser.add_argument("--weight_decay", type=float, default=0.0)
-    parser.add_argument("--max_steps", type=int, default=100)
+    parser.add_argument("--max_steps", type=int, default=50)
     parser.add_argument("--logging_steps", type=float, default=0.01)
     parser.add_argument("--warmup_steps", type=float, default=0.1)
     parser.add_argument("--save_steps", type=float, default=0.2)
     parser.add_argument("--eval_steps", type=float, default=0)
     parser.add_argument("--per_device_train_batch_size", type=int, default=32)
-    parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=2)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=1)
     parser.add_argument("--eval_accumulation_steps", type=int, default=None)
     parser.add_argument("--save_total_limit", type=int, default=3)
@@ -74,11 +74,12 @@ def main() -> None:
     # Lora
     lora_config = LoraConfig(
         r=64,
-        target_modules = ["q_proj", "v_proj"],
-        lora_alpha=64
+        target_modules=["q_proj", "v_proj"],
+        lora_alpha=64,
+        ensure_weight_tying=True,
     )
     model = get_peft_model(model, lora_config)
-    model.print_trainable_parameters() # trainable params: 3,276,800 || all params: 812,154,880 || trainable%: 0.4035
+    model.print_trainable_parameters()  # trainable params: 3,276,800 || all params: 812,154,880 || trainable%: 0.4035
 
     # ---------------- dataset ----------------
     if args.data_file.endswith(".json") or args.data_file.endswith(".jsonl"):
@@ -135,7 +136,6 @@ def main() -> None:
         warmup_steps=args.warmup_steps,
         save_steps=args.save_steps,
         eval_steps=args.eval_steps,
-        predict_with_generate=True,
         generation_max_length=model_config.max_target_positions,
         eval_strategy="steps" if args.eval_steps > 0 else "no",
         per_device_train_batch_size=args.per_device_train_batch_size,
@@ -143,6 +143,8 @@ def main() -> None:
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         eval_accumulation_steps=args.eval_accumulation_steps,  # 将 eval 的中间结果移动到内存中，防止显存溢出
         save_total_limit=args.save_total_limit,
+        prediction_loss_only=True,
+        # predict_with_generate=True,
         # load_best_model_at_end=True,
         # metric_for_best_model="cer",
         # greater_is_better=False,

@@ -32,7 +32,7 @@ def parse_args() -> argparse.Namespace:
     # train
     parser.add_argument("--learning_rate", type=float, default=2e-5)
     parser.add_argument("--lr_scheduler_type", type=str, default="cosine")
-    parser.add_argument("--weight_decay", type=float, default=0.1)
+    parser.add_argument("--weight_decay", type=float, default=0.0)
     parser.add_argument("--max_steps", type=int, default=50)
     parser.add_argument("--logging_steps", type=float, default=0.01)
     parser.add_argument("--warmup_steps", type=float, default=0.1)
@@ -128,7 +128,6 @@ def main() -> None:
         warmup_steps=args.warmup_steps,
         save_steps=args.save_steps,
         eval_steps=args.eval_steps,
-        predict_with_generate=True,
         generation_max_length=model_config.max_target_positions,
         eval_strategy="steps" if args.eval_steps > 0 else "no",
         per_device_train_batch_size=args.per_device_train_batch_size,
@@ -136,6 +135,8 @@ def main() -> None:
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         eval_accumulation_steps=args.eval_accumulation_steps,  # 将 eval 的中间结果移动到内存中，防止显存溢出
         save_total_limit=args.save_total_limit,
+        prediction_loss_only=True,
+        # predict_with_generate=True,
         # load_best_model_at_end=True,
         # metric_for_best_model="cer",
         # greater_is_better=False,
