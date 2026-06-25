@@ -6,7 +6,7 @@
 uv sync
 
 # 安装 flash-atention-4：https://github.com/Dao-AILab/flash-attention
-# 对于 whisper, flash-atention-4 只能用于推理，不能用于训练
+# 目前的脚本中, flash-atention-4 只能用于推理，不能用于训练
 
 # 如果需要上传日志到 wandb
 # `--report-to-wandb` 将日志上传到 wandb
