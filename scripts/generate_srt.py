@@ -17,6 +17,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model_name_or_path", type=str, default="openai/whisper-large-v3-turbo")
     parser.add_argument("--audio_path", type=str, default="./downloads/audio.wav")
     parser.add_argument("--output_path", type=str, default="./outputs/data/audio.srt")
+    parser.add_argument("--attn_implementation", type=str, default="flash_attention_4")
     parser.add_argument("--batch_size", type=int, default=128)
 
     return parser.parse_args()
@@ -51,7 +52,7 @@ def main():
         args.model_name_or_path,
         local_files_only=True,
         dtype=dtype,
-        attn_implementation="flash_attention_4",
+        attn_implementation=args.attn_implementation,
         device_map=device,
     )
     model.eval()
