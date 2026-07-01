@@ -27,7 +27,6 @@ def parse_args() -> argparse.Namespace:
 
     # dataset
     parser.add_argument("--data_file", default="KYOU-0/Ace-Taffy-voice")
-    parser.add_argument("--valid_size", type=float, default=0)
     parser.add_argument("--num_proc", type=int, default=8)
 
     parser.add_argument("--per_device_eval_batch_size", type=int, default=64)
@@ -87,7 +86,7 @@ def main() -> None:
         tokenizer=processor.tokenizer,
     )
 
-    dataset = dm.get_dataset(num_proc=args.num_proc)
+    dataset = dm.get_dataset()
 
     # ---------------- train ----------------
     metric_cer = evaluate.load("cer")

@@ -94,7 +94,7 @@ def main() -> None:
         tokenizer=processor.tokenizer,
     )
 
-    train_dataset = dm.get_dataset(num_proc=args.num_proc)
+    train_dataset = dm.get_dataset()
 
     # ---------------- train ----------------
     metric_cer = evaluate.load("cer")
