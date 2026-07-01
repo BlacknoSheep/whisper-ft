@@ -128,7 +128,7 @@ def main() -> None:
         processing_class=processor,
     )
 
-    eval_results = trainer.evaluate(language="zh", task="transcribe")
+    eval_results = trainer.evaluate(language="zh", task="transcribe", max_new_tokens=224)
     print(eval_results)
 
 
