@@ -60,3 +60,12 @@ python -m scripts.simple_lora --model_name="openai/whisper-large-v3-turbo" --dat
 # huggingface 数据集
 python -m scripts.simple_lora --model_name="openai/whisper-large-v3-turbo" --data_file="KYOU-0/Ace-Taffy-voice"
 ```
+
+# Result
+
+在 "KYOU-0/Ace-Taffy-voice" 上微调 50 步后，在 "KYOU-0/Ace-Taffy-voice" 上的字错误率（忽略标点和空白）
+
+| model                  | cer   |
+| :--------------------- | :---- |
+| whisper-large-v3-turbo | 81.72 |
+| simple_ft_50           | 27.19 |
