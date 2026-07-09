@@ -31,6 +31,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num_proc", type=int, default=8)
 
     # train
+    parser.add_argument("--gradient_checkpointing", action="store_true")
     parser.add_argument("--learning_rate", type=float, default=2e-4)
     parser.add_argument("--lr_scheduler_type", type=str, default="cosine")
     parser.add_argument("--weight_decay", type=float, default=0.0)
@@ -126,7 +127,7 @@ def main() -> None:
         output_dir=output_dir,
         bf16=True,
         tf32=True,
-        gradient_checkpointing=True,
+        gradient_checkpointing=args.gradient_checkpointing,
         torch_compile=True,
         learning_rate=args.learning_rate,
         lr_scheduler_type=args.lr_scheduler_type,
