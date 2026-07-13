@@ -24,10 +24,6 @@ def get_prefix_prompt(language: Optional[str], task: Optional[str], predict_time
 
 
 def normalize_text(text: str) -> str:
-    """
-    对文本和语言进行标准化
-    """
-
     # 全角半角统一
     text = unicodedata.normalize("NFKC", text)
     # 小写
