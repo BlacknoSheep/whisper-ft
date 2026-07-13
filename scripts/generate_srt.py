@@ -17,7 +17,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model_name_or_path", type=str, default="openai/whisper-large-v3-turbo")
     parser.add_argument("--audio_path", type=str, default="./downloads/audio.wav")
     parser.add_argument("--output_path", type=str, default="./outputs/data/audio.srt")
-    parser.add_argument("--attn_implementation", type=str, default="flash_attention_4")
+    parser.add_argument("--attn_implementation", type=str, default="sdpa")
     parser.add_argument("--batch_size", type=int, default=128)
 
     return parser.parse_args()

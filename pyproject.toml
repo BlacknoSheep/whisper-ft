@@ -24,8 +24,3 @@ dependencies = [
 [tool.ruff]
 line-length = 120
 indent-width = 4
-
-[dependency-groups]
-flash-attn = [
-    "flash-attn-4[cu13]>=4.0.0b19",
-]
