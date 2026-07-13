@@ -27,18 +27,14 @@ def normalize_text(text: str) -> str:
     """
     对文本和语言进行标准化
     """
-    # 非“任意语言的字母/数字” -> 空格
-    NON_TEXT_RE = regex.compile(r"[^\p{L}\p{N}]+")
-    WHITESPACE_RE = regex.compile(r"\s+")
 
     # 全角半角统一
     text = unicodedata.normalize("NFKC", text)
     # 小写
     text = text.lower()
-    # 标点/特殊字符 -> 空格
-    text = NON_TEXT_RE.sub(" ", text)
-    # 合并空白
-    text = WHITESPACE_RE.sub(" ", text)
-    # 去首尾空白
-    text = text.strip()
+    text = regex.sub(r"[<\[][^>\]]*[>\]]", "", text)  # remove words between brackets
+    text = regex.sub(r"\(([^)]+?)\)", "", text)  # remove words between parenthesis
+    text = regex.sub(r"[^\p{L}\p{N}]+", " ", text)  # 标点/特殊字符 -> 空格
+    text = regex.sub(r"\s+", " ", text)  # 合并空白
+    text = text.strip()  # 去首尾空白
     return text
