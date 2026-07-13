@@ -18,7 +18,7 @@ class SimpleCollator:
     """
     pad input_features 和 labels，返回的 labels 中 padding 部分被替换成了 -100，以正确计算 loss
     whisper forward 时会自动根据 labels 生成 decoder_input_ids（右移并添加 decoder_start_token_id ，将 -100 替换为 pad_token_id）
-    由于时 causal attention，且 loss 会忽略 -100，所以不需要 decoder_attention_mask
+    由于是 causal attention，且 loss 会忽略 -100，所以不需要 decoder_attention_mask
     """
 
     feature_extractor: WhisperFeatureExtractor
