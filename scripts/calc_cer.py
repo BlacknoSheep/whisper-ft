@@ -18,7 +18,7 @@ def parse_args() -> argparse.Namespace:
         prog="train_ft",
         description="fine-tune whisper model",
     )
-    parser.add_argument("--name", default="calc_wer")
+    parser.add_argument("--name", default="calc_cer")
     parser.add_argument("--output_dir", default="./outputs/finetune")
 
     # model
@@ -62,8 +62,8 @@ def main() -> None:
         attn_implementation=args.attn_implementation,
     )
 
-    # freeze encoder
-    model.model.encoder.requires_grad_(False)
+    model.model.requires_grad_(False)
+    model.eval()
 
     # ---------------- dataset ----------------
     if args.data_file.endswith(".json") or args.data_file.endswith(".jsonl"):
@@ -111,9 +111,8 @@ def main() -> None:
         output_dir=output_dir,
         bf16=True,
         tf32=True,
-        torch_compile=True,
+        # torch_compile=True, # compile 太慢了
         predict_with_generate=True,
-        generation_max_length=model_config.max_target_positions,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         eval_accumulation_steps=args.eval_accumulation_steps,
         seed=args.seed,
