@@ -30,7 +30,7 @@ def normalize_text(text: str) -> str:
     text = text.lower()
     text = regex.sub(r"[<\[][^>\]]*[>\]]", "", text)  # remove words between brackets
     text = regex.sub(r"\(([^)]+?)\)", "", text)  # remove words between parenthesis
-    text = regex.sub(r"[^\p{L}\p{N}]+", " ", text)  # 标点/特殊字符 -> 空格
+    # text = regex.sub(r"[^\p{L}\p{N}]+", " ", text)  # 标点/特殊字符 -> 空格
     text = regex.sub(r"\s+", " ", text)  # 合并空白
     text = text.strip()  # 去首尾空白
     return text

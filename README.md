@@ -65,4 +65,4 @@ python -m scripts.simple_lora --model_name="openai/whisper-large-v3-turbo" --dat
 | model                  | cer   |
 | :--------------------- | :---- |
 | whisper-large-v3-turbo | 81.72 |
-| simple_ft_50           | 27.19 |
+| simple_ft_50           | 25.52 |
