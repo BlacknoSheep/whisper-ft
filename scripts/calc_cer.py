@@ -14,10 +14,7 @@ import regex as re
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        prog="train_ft",
-        description="fine-tune whisper model",
-    )
+    parser = argparse.ArgumentParser()
     parser.add_argument("--name", default="calc_cer")
     parser.add_argument("--output_dir", default="./outputs/finetune")
 
