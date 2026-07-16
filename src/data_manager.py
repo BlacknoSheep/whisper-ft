@@ -89,7 +89,9 @@ class SimpleDataManager:
         self.dataset = self.dataset.cast_column("audio", Audio(sampling_rate=self.samplerate))
         # 由于需要根据 language 构造，不 batch
         # 由于用到了 tokenizer，所以不能多线程并行, num_proc=0
-        self.dataset = self.dataset.map(self._normalize, remove_columns=self.dataset.column_names)
+        self.dataset = self.dataset.map(
+            self._normalize, remove_columns=self.dataset.column_names, load_from_cache_file=False
+        )
         return self.dataset
 
     def get_collator(self, dtype: torch.dtype = torch.float32):
