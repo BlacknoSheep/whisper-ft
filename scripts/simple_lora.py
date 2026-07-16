@@ -95,7 +95,7 @@ def main() -> None:
             num_proc=args.num_proc,
         )
     else:
-        dataset = load_dataset("KYOU-0/Ace-Taffy-voice", split="train")
+        dataset = load_dataset(args.data_file, split="train")
 
     dm = SimpleDataManager(
         dataset=dataset,
