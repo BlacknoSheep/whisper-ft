@@ -49,6 +49,14 @@ def parse_args() -> argparse.Namespace:
 
     return parser.parse_args()
 
+class FrozenEncoderWhisper(WhisperForConditionalGeneration):
+    def train(self, mode: bool = True):
+        super().train(mode)
+
+        if mode:
+            self.model.encoder.eval()
+
+        return self
 
 def main() -> None:
     from scripts.utils import get_utc_time_str
@@ -63,7 +71,7 @@ def main() -> None:
     # ---------------- model ----------------
     processor = WhisperProcessor.from_pretrained(args.model_name, local_files_only=True)
     model_config = WhisperConfig.from_pretrained(args.model_name, local_files_only=True)
-    model = WhisperForConditionalGeneration.from_pretrained(
+    model = FrozenEncoderWhisper.from_pretrained(
         args.model_name,
         config=model_config,
         dtype=dtype,
