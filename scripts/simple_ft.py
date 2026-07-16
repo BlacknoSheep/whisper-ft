@@ -73,6 +73,7 @@ def main() -> None:
 
     # freeze encoder
     model.model.encoder.requires_grad_(False)
+    model.model.encoder.eval()
 
     # ---------------- dataset ----------------
     if args.data_file.endswith(".json") or args.data_file.endswith(".jsonl"):
