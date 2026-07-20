@@ -19,6 +19,7 @@ def parse_args() -> argparse.Namespace:
     # model
     parser.add_argument("--model_name", default="openai/whisper-large-v3-turbo")
     parser.add_argument("--attn_implementation", default="sdpa")
+    parser.add_argument("--rank", type=int, default=64)
 
     # dataset
     parser.add_argument("--data_file", default="KYOU-0/Ace-Taffy-voice")
@@ -62,9 +63,9 @@ def main() -> None:
 
     # Lora
     lora_config = LoraConfig(
-        r=64,
+        r=args.rank,
         target_modules=r"^model\.decoder\..*\.(q_proj|v_proj)$",
-        lora_alpha=64,
+        lora_alpha=args.rank,
         # ensure_weight_tying=True, # 没有微调 embedding 层和 lm_head 层
     )
     model = get_peft_model(model, lora_config)

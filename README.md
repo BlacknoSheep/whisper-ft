@@ -48,9 +48,9 @@ python -m scripts.simple_lora --model_name="openai/whisper-large-v3-turbo" --dat
 
 数据集：KYOU-0/Ace-Taffy-voice
 
-| model                  | loss   | cer\* |
-| :--------------------- | :----- | :---- |
-| whisper-large-v3-turbo |        | 81.72 |
+| model                  |   loss | cer\* |
+| ---------------------- | -----: | ----: |
+| whisper-large-v3-turbo | 1.5514 | 63.45 |
 | simple_ft              | 0.7039 | 44.15 |
 | simple_lora            | 0.6937 | 33.14 |
 
