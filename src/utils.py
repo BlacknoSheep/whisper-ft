@@ -2,6 +2,8 @@ from typing import Optional
 from transformers.models.whisper.tokenization_whisper import TO_LANGUAGE_CODE
 import regex
 import unicodedata
+from torch import nn
+from typing import Dict, Any
 
 TASK_TYPES = ["transcribe", "translate"]
 
@@ -34,3 +36,28 @@ def normalize_text(text: str) -> str:
     text = regex.sub(r"\s+", " ", text)  # 合并空白
     text = text.strip()  # 去首尾空白
     return text
+
+
+def print_trainable_parameters(model: nn.Module) -> Dict[str, Any]:
+    trainable_params = 0
+    total_params = 0
+
+    # model.parameters() 默认会去重共享/权重绑定的 Parameter
+    for param in model.parameters():
+        num_params = param.numel()
+        total_params += num_params
+        if param.requires_grad:
+            trainable_params += num_params
+
+    trainable_ratio = 100.0 * trainable_params / total_params if total_params > 0 else 0.0
+
+    stats = {
+        "trainable_params": trainable_params,
+        "total_params": total_params,
+        "trainable_ratio": trainable_ratio,
+    }
+
+    print(
+        f"trainable params: {trainable_params:,} || all params: {total_params:,} || trainable: {trainable_ratio:.4f}%"
+    )
+    return stats

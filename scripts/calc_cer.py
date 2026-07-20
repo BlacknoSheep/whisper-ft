@@ -20,6 +20,7 @@ def parse_args() -> argparse.Namespace:
 
     # model
     parser.add_argument("--model_name", default="openai/whisper-large-v3-turbo")
+    parser.add_argument("--lora_model", type=str, default=None)
     parser.add_argument("--attn_implementation", default="sdpa")
 
     # dataset
@@ -58,6 +59,11 @@ def main() -> None:
         local_files_only=True,
         attn_implementation=args.attn_implementation,
     )
+
+    if args.lora_model is not None:
+        from peft import PeftModel
+
+        model = PeftModel.from_pretrained(model, args.lora_model)
 
     model.model.requires_grad_(False)
     model.eval()
@@ -108,7 +114,6 @@ def main() -> None:
         output_dir=output_dir,
         bf16=True,
         tf32=True,
-        # torch_compile=True, # compile 太慢了
         predict_with_generate=True,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         eval_accumulation_steps=args.eval_accumulation_steps,

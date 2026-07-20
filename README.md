@@ -1,20 +1,10 @@
-# Prepare
- 
-## 环境配置
+# 准备
 
 ```bash
 uv sync
 
-# 如果需要上传日志到 wandb
-# `--report-to-wandb` 将日志上传到 wandb
-wandb login
-```
+. .venv/bin/activate
 
-## 下载基础模型
-
-```bash
-# 预下载模型，避免每次都需要校验
-# hf download <hf_model_name>
 hf download openai/whisper-large-v3-turbo
 ```
 
@@ -33,13 +23,9 @@ hf download openai/whisper-large-v3-turbo
 
 至少包含`audio`，`language`，`transcription`这三列，例如：https://huggingface.co/datasets/KYOU-0/Ace-Taffy-voice
 
-
 # Finetune
 
-1. 微调 decoder
-
-如果只是为了提高识别准确率，微调 decoder 足够了，收敛速度非常快。  
-特别是 whisper-large-v3-turbo 的 decoder 只有 4 层，显存需求低，效率高。
+1. 全参数微调 decoder + lm_head（encoder 以外部分）
 
 ```bash
 # 本地数据集
@@ -60,9 +46,12 @@ python -m scripts.simple_lora --model_name="openai/whisper-large-v3-turbo" --dat
 
 # Result
 
-在 "KYOU-0/Ace-Taffy-voice" 上微调 50 步后，在 "KYOU-0/Ace-Taffy-voice" 上的字错误率（忽略标点和空白）
+数据集：KYOU-0/Ace-Taffy-voice
 
-| model                  | cer   |
-| :--------------------- | :---- |
-| whisper-large-v3-turbo | 81.72 |
-| simple_ft_50           | 25.52 |
+| model                  | loss   | cer\* |
+| :--------------------- | :----- | :---- |
+| whisper-large-v3-turbo |        | 81.72 |
+| simple_ft              | 0.7039 | 44.15 |
+| simple_lora            | 0.6937 | 33.14 |
+
+\*去除空白、标点、特殊符号
